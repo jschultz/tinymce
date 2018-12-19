@@ -25,7 +25,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		"#372101", "#FFB500", "#C2FFED", "#A079BF", "#CC0744", "#C0B9B2", "#C2FF99", "#001E09",
 		"#00489C", "#6F0062", "#0CBD66", "#EEC3FF", "#456D75", "#B77B68", "#7A87A1", "#788D66",
 		"#885578", "#FAD09F", "#FF8A9A", "#D157A0", "#BEC459", "#456648", "#0086ED", "#886F4C",
-		
+
 		"#34362D", "#B4A8BD", "#00A6AA", "#452C2C", "#636375", "#A3C8C9", "#FF913F", "#938A81",
 		"#575329", "#00FECF", "#B05B6F", "#8CD0FF", "#3B9700", "#04F757", "#C8A1A1", "#1E6E00",
 		"#7900D7", "#A77500", "#6367A9", "#A05837", "#6B002C", "#772600", "#D790FF", "#9B9700",
@@ -34,7 +34,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		"#83AB58", "#001C1E", "#D1F7CE", "#004B28", "#C8D0F6", "#A3A489", "#806C66", "#222800",
 		"#BF5650", "#E83000", "#66796D", "#DA007C", "#FF1A59", "#8ADBB4", "#1E0200", "#5B4E51",
 		"#C895C5", "#320033", "#FF6832", "#66E1D3", "#CFCDAC", "#D0AC94", "#7ED379", "#012C58",
-		
+
 		"#7A7BFF", "#D68E01", "#353339", "#78AFA1", "#FEB2C6", "#75797C", "#837393", "#943A4D",
 		"#B5F4FF", "#D2DCD5", "#9556BD", "#6A714A", "#001325", "#02525F", "#0AA3F7", "#E98176",
 		"#DBD5DD", "#5EBCD1", "#3D4F44", "#7E6405", "#02684E", "#962B75", "#8D8546", "#9695C5",
@@ -52,11 +52,11 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		"#1A3A2A", "#494B5A", "#A88C85", "#F4ABAA", "#A3F3AB", "#00C6C8", "#EA8B66", "#958A9F",
 		"#BDC9D2", "#9FA064", "#BE4700", "#658188", "#83A485", "#453C23", "#47675D", "#3A3F00",
 		"#061203", "#DFFB71", "#868E7E", "#98D058", "#6C8F7D", "#D7BFC2", "#3C3E6E", "#D83D66",
-		
+
 		"#2F5D9B", "#6C5E46", "#D25B88", "#5B656C", "#00B57F", "#545C46", "#866097", "#365D25",
 		"#252F99", "#00CCFF", "#674E60", "#FC009C", "#92896B"
 	];
-	
+
 	var sideBarWidth = 100;
 
 // ----------------------------  Global variables  ----------------------------
@@ -68,22 +68,39 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		maskBar = [],
 		barRefs,
 		sideDiv;
-		
+
 	var	selTop,
-		selHeight,
 		unselTop,
+		unselBottom,
+		selHeight,
 		unselHeight;
-		
+
 	var contentAreaContainer;
-		
+
+	function updateTags() {
+		var
+			spans = editor.dom.select('span');
+
+		for (var spanIndex = 0; spanIndex < spans.length; spanIndex++) {
+			var span = spans[spanIndex];
+			var tagName = span.getAttribute('data-tag');
+			for (var tagNum = 0; tagNum < tagNodes.length; tagNum++) {
+				if (tagNodes[tagNum].name === tagName) {
+					break;
+				}
+			}
+			if (tagNum === tagNodes.length) {
+				appendTagNode(tagName, tagNum);
+			}
+		}
+	}
 
 	function updateBars() {
 		var
 			spans = editor.dom.select('span');
 		var
-			divheight, 
-			div, 
-			gap, 
+			divheight,
+			gap,
 			lastspan;
 		var
 			barTop,
@@ -98,7 +115,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		function nextSibling(node, end) {
 			var
 				result;
-				
+
 			if (node.nodeName == "BODY") {
 				return null;
 			} else {
@@ -113,24 +130,24 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				}
 			}
 		}
-		
+
 		function appendVerticalBar() {
-			var 
+			var
 				div = editor.dom.create('div', {
 					id: editor.dom.uniqueId(),
 					"data-divindex": barRefs.length,
 					class: "verticalbar",
 					style: "top: " + barTop + "px; height: " + divheight + "px;"
 				});
-				
+
 			//  For some reason if you define these when creating the div, they don't work.
 			div.onmouseover = highlight;
 			div.onmouseleave = unhighlight;
-	
+
 			tagBar[tagNum].appendChild(div);
 			barRefs.push(barSpans);
 		}
-		
+
 		function highlight(div) {
 			var barSpans = barRefs[div.target.getAttribute("data-divindex")];
 			for (var i = 0; i < barSpans.length; i++) {
@@ -163,12 +180,12 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				class: "maskbar"
 			});
 			tagBar[tagNum].appendChild(maskBar[tagNum]);
-			
+
 			//  Build the actual tag bars. If two spans have no text (ie only paragraph breaks) between them then make a single bar.
 			barTop = null;
 			barSpans = [];
 			for (spanIndex = 0; spanIndex < spans.length; spanIndex++) {
-				var span = spans[spanIndex];
+				span = spans[spanIndex];
 				if (span.getAttribute('data-tag') === tagNodes[tagNum].name) {
 					if (barTop === null) {
 						barTop = span.offsetTop;
@@ -194,7 +211,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 						} else {
 							appendVerticalBar();
 							barRefs.push(barSpans);
-							
+
 							barSpans = [];
 							barSpans.push(span);
 							barTop = span.offsetTop;
@@ -208,7 +225,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				appendVerticalBar();
 			}
 		}
-		
+
 		// Work out whether scroll bar is visible - if so then reduce sidebar width to allow room for it.
 		// Why is the figure 22?
 		if (editor.getBody().offsetHeight + 22 >= contentAreaContainer.offsetHeight) {
@@ -230,16 +247,16 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		sideDiv.style.height = editor.iframeElement.style.height;
 		updateBars();
 	}
-	
+
 	function appendTagNode(name, tagNum) {
 		var
 			textBar;
-			
+
 		tagNodes[tagNum] = {
 			name:  name,
 			color: indexcolors[tagNum]
 		};
-		
+
 		sideBar[tagNum] = editor.dom.create('div', {
 			id: editor.dom.uniqueId(),
 			class: "sidebar",
@@ -266,26 +283,25 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		maskBar[tagNum] = editor.dom.create('div', {
 			id: editor.dom.uniqueId(),
 			class: "maskbar",
-			style: { top: selTop, height: selHeight, color: 'inherit', opacity: 1 }
+			style: {top: selTop, height: selHeight, color: 'inherit', opacity: 1}
 		});
 		tagBar[tagNum].appendChild(maskBar[tagNum]);
 	}
 
 	function tagwindow() {
 		var body = [];
-		var newtagbody = [ { 
+		var newtagbody = [{
 			name: 'name',
 			label: 'Name',
 			type: 'textbox'
-		} ];
+		}];
 		var inspan = new Array(tagNodes.length), tagged = new Array(tagNodes.length), untagged = new Array(tagNodes.length);
 		var checked = new Array(tagNodes.length);
-		var textbar;
 		var tagNum;
 
 		//  Function to determine whether a selection is already entirely/partially/not tagged.
 		function walkSelectionTree(node) {
-			var 
+			var
 				tagNum,
 				tagName,
 				childNode;
@@ -319,11 +335,11 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				}
 			}
 		}
-		
+
 		function clickCheckBox() {
 			var tagNum = Number(this.name());
 			var value = this.value();
-			
+
 			if (value === true) {
 				maskBar[tagNum].style.top = selTop;
 				maskBar[tagNum].style.height = selHeight;
@@ -338,7 +354,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				maskBar[tagNum].style.opacity = 0;
 			}
 		}
-			
+
 		function tagWindowClose() {
 			for (var tagNum = 0; tagNum < tagNodes.length; tagNum++) {
 				maskBar[tagNum].style.opacity = 0;
@@ -351,7 +367,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 			for (var tagNum = 0; tagNum < tagNodes.length; tagNum++) {
 				if (e.data[tagNum] !== null) {
 					if (e.data[tagNum]) {
-						if (checked[tagNum] != true) {
+						if (checked[tagNum] !== true) {
 							if (!change) {
 								change = true;
 								editor.undoManager.beforeChange();
@@ -361,7 +377,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 							});
 						}
 					} else {
-						if (checked[tagNum] != false) {
+						if (checked[tagNum] !== false) {
 							if (!change) {
 								change = true;
 								editor.undoManager.beforeChange();
@@ -377,23 +393,22 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				editor.undoManager.add();
 			}
 		}
-		
+
 		function newTagCancel() {
 			editor.windowManager.open({
 				title: 'Tag',
 				body: body,
 				onsubmit: tagWindowSubmit,
-				scrollbars: true,
+				scrollbars: true
 			});
 		}
-		
+
 		function newTagSubmit(e) {
 			var value = e.data.name;
-			var dom = editor.dom;
-			
+
 			if (value !== '') {
 				tagNum = tagNodes.length;
-				appendTagNode (value, tagNum);
+				appendTagNode(value, tagNum);
 				checked[tagNum] = false;
 				body.splice(tagNum, 0, {
 					type: 'checkbox',
@@ -405,41 +420,40 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				});
 			}
 		}
-		
+
 		function newtag() {
 			editor.windowManager.close();
-			editor.windowManager.open ({
+			editor.windowManager.open({
 				title: 'New Tag',
 				body: newtagbody,
 				onsubmit: newTagSubmit,
 				onclose: newTagCancel
 			});
 		}
-	
+
 		if (editor.selection.getContent() !== '') {
-	
+
 // This is some painful stuff. First we calculate the Y offset and height of the selection by making a
 // temporary 'selection' format, retrieving its location and size, then removing it.
 
 			editor.formatter.apply('selection');
-			selSpans = editor.dom.select('span.selection');
-			selBlocks = editor.selection.getSelectedBlocks();
-			
-			
-			selTop = selSpans[0].offsetTop;
-			selBottom = selSpans[selSpans.length-1].offsetTop + selSpans[selSpans.length-1].offsetHeight;
-			selHeight = selBottom - selTop;
-			
-// For unselection it's even more tricky. We build a range from the start of the selected blocks up to 
+			var selSpans = editor.dom.select('span.selection');
+			var selBlocks = editor.selection.getSelectedBlocks();
+
+			var selTop = selSpans[0].offsetTop;
+			var selBottom = selSpans[selSpans.length - 1].offsetTop + selSpans[selSpans.length - 1].offsetHeight;
+			var selHeight = selBottom - selTop;
+
+// For unselection it's even more tricky. We build a range from the start of the selected blocks up to
 // the start/end of the selection to see whether it vertically overlaps the selection.
-			selRects = editor.selection.getRng().getClientRects();
-			
+			var selRects = editor.selection.getRng().getClientRects();
+
 			try {
-				aboveRng=editor.dom.createRng();
-				aboveRng.setStart(selBlocks[0],0);
+				var aboveRng = editor.dom.createRng();
+				aboveRng.setStart(selBlocks[0], 0);
 				aboveRng.setEndBefore(selSpans[0]);
-				aboveRects = aboveRng.getClientRects();
-				lastRect = aboveRects.length - 1;
+				var aboveRects = aboveRng.getClientRects();
+				var lastRect = aboveRects.length - 1;
 				while (lastRect >= 0 && aboveRects[lastRect].width === 0) {
 					lastRect -= 1;
 				}
@@ -448,40 +462,40 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				} else {
 					unselTop = selRects[0].top;
 				}
-			} catch(err) {
+			} catch (err) {
 				unselTop = selTop;
 			}
-			
+
 			try {
-				belowRng=editor.dom.createRng();
-				belowRng.setStartAfter(selSpans[selSpans.length-1]);
-				belowRng.setEnd(selBlocks[selBlocks.length-1], 0); // NO GOOD - need end of block???
-				belowRects = belowRng.getClientRects();
-				firstRect = 0;
+				var belowRng = editor.dom.createRng();
+				belowRng.setStartAfter(selSpans[selSpans.length - 1]);
+				belowRng.setEnd(selBlocks[selBlocks.length - 1], 0); // NO GOOD - need end of block???
+				var belowRects = belowRng.getClientRects();
+				var firstRect = 0;
 				while (firstRect < belowRects.length && belowRects[firstRect].width === 0) {
 					firstRect += 1;
 				}
 				if (firstRect < belowRects.length) {
-					unselBottom = Math.min(belowRects[firstRect].top, selRects[selRects.length-1].bottom);
+					unselBottom = Math.min(belowRects[firstRect].top, selRects[selRects.length - 1].bottom);
 				} else {
-					unselBottom = selRects[selRects.length-1].bottom;
+					unselBottom = selRects[selRects.length - 1].bottom;
 				}
 			} catch (err) {
 				unselBottom = selBottom;
 			}
-			
-			console.log (selTop, selBottom, unselTop, unselBottom);
+
+// 			console.log (selTop, selBottom, unselTop, unselBottom);
 			if (unselBottom > unselTop) {
 				unselHeight = unselBottom - unselTop;
 			} else {
 				unselTop = undefined;
 				unselBottom = undefined;
-				unselHight = undefined;
+				unselHeight = undefined;
 			}
-			
-			tinyMCE.activeEditor.formatter.remove('selection');
 
-// Then we need to find out whether the selection is all/some/none tagged at each of the tags. 
+			editor.formatter.remove('selection');
+
+// Then we need to find out whether the selection is all/some/none tagged at each of the tags.
 
 			var selectionRoot = editor.parser.parse(editor.selection.getContent());
 			for (tagNum = 0; tagNum < tagNodes.length; tagNum++) {
@@ -507,7 +521,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 					onclick: clickCheckBox
 				});
 			}
-			body.push ({
+			body.push({
 				type: 'button',
 				size: 20,
 				text: 'New',
@@ -520,12 +534,11 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 				body: body,
 				onsubmit: tagWindowSubmit,
 				onclose: tagWindowClose,
-				scrollbars: true,
+				scrollbars: true
 			});
 		}
 	}
 
-	
 //	Editor customisation code - is this the right place for it?
 
 	editor.addButton('tag', {
@@ -533,7 +546,7 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		tooltip: 'Tag/untag selection',
 		onclick: tagwindow
 	});
-	
+
 	editor.addMenuItem('tag', {
 		text: 'Tag/untag selection',
 		image: 'img/Ecommerce-Price-Tag-icon.png',
@@ -541,41 +554,39 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 		onclick: tagwindow,
 		context: 'div'
 	});
-	
+
 	editor.on('init', function() {
-        var cssURL = url + '/css/tagging.css';
-		var
-			tagName;
+		var cssURL = url + '/css/tagging.css';
 		var dom = editor.dom;
 		var body = editor.getBody();
-		
-        if(document.createStyleSheet){
-            document.createStyleSheet(cssURL);
-        } else {
-            cssLink = editor.dom.create('link', {
-                        rel: 'stylesheet',
-                        href: cssURL
-                      });
-            document.getElementsByTagName('head')[0].
-                      appendChild(cssLink);
-        }
-        
+
+		if (document.createStyleSheet) {
+			document.createStyleSheet(cssURL);
+		} else {
+			var cssLink = editor.dom.create('link', {
+						rel: 'stylesheet',
+						href: cssURL
+					});
+			document.getElementsByTagName('head')[0].
+						appendChild(cssLink);
+		}
+
 		editor.formatter.register('tag', {
 			inline: 'span',
 			exact: true,
 			attributes: {
-				"data-tag": "%tag",
-			},
+				"data-tag": "%tag"
+			}
 		}); /* Undocumented! */
-		
+
 		editor.formatter.register('selection', {
 			inline: 'span',
 			exact: true,
 			attributes: {
 				class: "selection"
-			},
+			}
 		}); /* Undocumented! */
-		
+
 		contentAreaContainer = editor.getContentAreaContainer();
 		contentAreaContainer.style.width = '100%';
 		contentAreaContainer.style.display = 'inline-block';
@@ -592,26 +603,11 @@ tinymce.PluginManager.add('tagging', function(editor, url) {
 			style: "margin-left: " + -sideBarWidth + "px"
 		});
 		contentAreaContainer.appendChild(sideDiv);
-		
-		// Load up tags from existing content
-		
-		var
-			spans = editor.dom.select('span');
 
-		for (spanIndex = 0; spanIndex < spans.length; spanIndex++) {
-			var span = spans[spanIndex];
-			tagName = span.getAttribute('data-tag');
-			for (tagNum = 0; tagNum < tagNodes.length; tagNum++) {
-				if (tagNodes[tagNum].name === tagName) {
-					break;
-				}
-			}
-			if (tagNum === tagNodes.length) {
-				appendTagNode (tagName, tagNum)
-			}
-		}
+		updateTags();
 
 		editor.on('setcontent', updateBars);
+		editor.on('setcontent', updateTags);
 		editor.on('load ResizeEditor', resize);
 		editor.on('load', scroll_sideDiv); /* Doesn't seem to work? */
 		editor.getWin().onscroll = scroll_sideDiv;

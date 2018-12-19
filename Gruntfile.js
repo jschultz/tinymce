@@ -36,7 +36,11 @@ module.exports = function(grunt) {
 				"!js/tinymce/plugins/spellchecker/plugin.js"
 			],
 
-			themes: ["js/tinymce/themes/*/theme.js"]
+			themes: ["js/tinymce/themes/*/theme.js"],
+
+			options: {
+				reporterOutput: ''  // https://stackoverflow.com/questions/37808127/grunt-warning-path-must-be-a-string-received-a-null
+			}
 		},
 
 		jscs: {
