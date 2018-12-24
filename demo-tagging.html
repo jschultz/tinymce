@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="text/javascript" src="js/tinymce/tinymce.min.js"></script>
+    <script type="text/javascript">
+        tinymce.init({
+            height: 480,
+            selector: "#mytextarea",
+            plugins: ["tagging"],
+            toolbar: "undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | table | fontsizeselect | tag",
+            init_instance_callback:function(editor){
+         editor.setContent("Lorem ipsum dolor sit amet, <span data-tag=\"First tag\">consectetur adipiscing elit, <span data-tag=\"Second tag\">sed do eiusmod tempor</span></span><span data-tag=\"Second tag\"> incididunt ut labore et dolore magna aliqua.</span> Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. <span data-tag=\"First tag\">Excepteur sint occaecat</span> cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.");}
+        });
+    </script>
+</head>
+<body>
+    <h1>TinyMCE with text tagging</h1>
+    <form method="post">
+        <textarea id="mytextarea"></textarea>
+    </form>
+</body>
+</html>
